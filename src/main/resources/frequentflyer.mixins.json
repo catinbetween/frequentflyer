@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "com.catinbetween.minecraft.frequentflyer.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"FrequentFlyerElytraMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

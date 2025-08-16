@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "frequentflyer",
+	"version": "${version}",
+	"name": "FrequentFlyer",
+	"description": "This mod allows flying when equipping an elytra with the enchantment frequent_flyer.",
+	"authors": [
+		"Catinbetween"
+	],
+	"contact": {
+		 "sources": "https://github.com/catinbetween/FrequentFlyer"
+},
+	"license": "CC BY-NC-SA 4.0",
+	"icon": "assets/frequentflyer/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+          "com.catinbetween.minecraft.frequentflyer.FrequentFlyer"
+		]
+	},
+	"mixins": [
+		"frequentflyer.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.17.2",
+		"minecraft": "~1.21.8",
+		"java": ">=21",
+		"fabric": "*"
+	}
+}

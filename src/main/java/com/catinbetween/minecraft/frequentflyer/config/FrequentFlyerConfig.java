@@ -1,28 +1,24 @@
 package com.catinbetween.minecraft.frequentflyer.config;
 
+import com.catinbetween.minecraft.frequentflyer.FrequentFlyer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import org.apache.logging.log4j.Level;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
-import com.catinbetween.minecraft.frequentflyer.FrequentFlyer;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import org.apache.logging.log4j.Level;
-import net.minecraft.util.Identifier;
-
 
 public class FrequentFlyerConfig {
-    public static FrequentFlyerConfig INSTANCE = new FrequentFlyerConfig();
-
     private static final File configDir = new File("config");
     private static final File configFile = new File("config/" + FrequentFlyer.MOD_ID + "_config.json");
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().serializeNulls().create();
-
-
+    public static FrequentFlyerConfig INSTANCE = new FrequentFlyerConfig();
     public String[] advancementsRequired = new String[]{"minecraft:end/elytra"};
     public transient Identifier[] advancements;
     public int slowFallingTime = 10;
@@ -30,15 +26,15 @@ public class FrequentFlyerConfig {
     public String logLevel = "INFO";
     public transient Level log;
 
-    public static void loadConfig(){
-        try{
+    public static void loadConfig() {
+        try {
             configDir.mkdirs();
-            if(configFile.createNewFile()){
+            if (configFile.createNewFile()) {
                 FileWriter fw = new FileWriter(configFile);
                 fw.append(gson.toJson(INSTANCE));
                 fw.close();
                 FrequentFlyer.log(Level.INFO, "Default config generated.");
-            }else{
+            } else {
                 FileReader fr = new FileReader(configFile);
                 INSTANCE = gson.fromJson(fr, FrequentFlyerConfig.class);
                 fr.close();
@@ -46,30 +42,22 @@ public class FrequentFlyerConfig {
                 FrequentFlyer.log(Level.INFO, "FrequentFlyerConfig loaded.");
                 return;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             FrequentFlyer.log(Level.WARN, "Error loading config, using default values.");
         }
         INSTANCE.generateTransients();
     }
 
-    public static void saveConfigs(){
-        try{
+    public static void saveConfigs() {
+        try {
             configDir.mkdirs();
             FileWriter fw = new FileWriter(configFile);
             fw.append(gson.toJson(INSTANCE));
             fw.close();
             FrequentFlyer.log(Level.INFO, "FrequentFlyerConfig saved.");
-        }catch(Exception e){
+        } catch (Exception e) {
             FrequentFlyer.log(Level.ERROR, "Error saving config");
         }
-    }
-
-    private void generateTransients(){
-        advancements = new Identifier[advancementsRequired.length];
-        for(int i = 0; i < advancements.length; i++){
-            advancements[i] = Identifier.of(advancementsRequired[i]);
-        }
-        log = Level.getLevel(logLevel);
     }
 
     public static int meow(CommandContext<ServerCommandSource> context) {
@@ -95,5 +83,13 @@ public class FrequentFlyerConfig {
         context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Log level set to " + value), false);
         FrequentFlyer.log(Level.INFO, "Log level set to " + value);
         return 1;
+    }
+
+    private void generateTransients() {
+        advancements = new Identifier[advancementsRequired.length];
+        for (int i = 0; i < advancements.length; i++) {
+            advancements[i] = Identifier.of(advancementsRequired[i]);
+        }
+        log = Level.getLevel(logLevel);
     }
 }

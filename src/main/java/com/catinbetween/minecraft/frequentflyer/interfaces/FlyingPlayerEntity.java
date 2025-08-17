@@ -1,10 +1,22 @@
 package com.catinbetween.minecraft.frequentflyer.interfaces;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import java.util.UUID;
 
 public interface FlyingPlayerEntity {
-    public void frequentflyer$allowFlight(int level);
-    public void frequentflyer$allowFlight(int level, ServerPlayerEntity grandtedByPlayer);
-    public void frequentflyer$disallowFlight();
-    public void setFlying(boolean flying);
+    void frequentflyer$allowFlight(int level);
+
+    void frequentflyer$allowFlight(int level, UUID grandtedByPlayer);
+
+    void frequentflyer$disallowFlight();
+
+    boolean isFfFlightEnabled = false;
+    UUID grantedByPlayerUUID = null;
+
+    boolean frequentflyer$isFfFlightEnabled();
+
+    void frequentflyer$setIsFfFlightEnabled(boolean isFfFlightEnabled);
+
+    UUID frequentflyer$getGrantedByPlayerUUID();
+
+    void frequentflyer$setGrantedByPlayerUUID(UUID grantedByPlayerUUID);
 }

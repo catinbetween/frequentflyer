@@ -2,10 +2,7 @@ package com.catinbetween.minecraft.frequentflyer.events;
 
 import com.catinbetween.minecraft.frequentflyer.FrequentFlyer;
 import com.catinbetween.minecraft.frequentflyer.config.FrequentFlyerConfig;
-import net.luckperms.api.cacheddata.CachedPermissionData;
-
 import com.catinbetween.minecraft.frequentflyer.interfaces.FlyingPlayerEntity;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -21,17 +18,23 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
 
+import java.util.UUID;
+
 public class EventHandler {
     private static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of("catinbetween", "frequent_flyer"));
 
     private static final String SELF_FLY_PERMISSION = "frequentFlyer.ability.fly.self";
     private static final String OTHERS_FLY_PERMISSION = "frequentFlyer.ability.fly.others";
 
-      public static void evaluateTickAllowFlight(ServerPlayerEntity player) {
-        ItemStack chestStack = player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
+
+    public static void evaluateTickAllowFlight(ServerPlayerEntity player) {
         if (player.getGameMode() == GameMode.SURVIVAL) {
+            FlyingPlayerEntity flyingPlayerEntity = (FlyingPlayerEntity) player;
+            UUID grantedByPlayerUUID = flyingPlayerEntity.frequentflyer$getGrantedByPlayerUUID();
+
+            ItemStack chestStack = player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
             boolean hasElytra = chestStack.getItem() == Items.ELYTRA;
-            Boolean allowFlight = false;
+            boolean canFlyWithElytra = false;
             int level = 1;
 
             if (hasElytra) {
@@ -39,42 +42,27 @@ public class EventHandler {
                     Identifier enchant = ((RegistryEntry.Reference) entry.getKey()).registryKey().getValue();
                     level = entry.getIntValue();
                     if (FREQUENTFLYER.getValue().equals(enchant)) {
-                        allowFlight = true;
+                        canFlyWithElytra = true;
                         break;
                     }
                 }
             }
 
-            FlyingPlayerEntity playerEntity = (FlyingPlayerEntity) player;
-            boolean hasFlyPermission = hasAnyLuckPermsFlyPermission(player);
-            if (hasElytra && allowFlight || hasFlyPermission) {
-                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight!, haselytra: %s, allowFlight: %s, hasFlyPermission: %s", hasElytra, allowFlight, hasFlyPermission));
-                playerEntity.frequentflyer$allowFlight(level);
+            if (hasElytra && canFlyWithElytra) {
+                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having elytra!, haselytra: %s, canFlyWithElytra: %s", player.getName().getString(), true, canFlyWithElytra));
+                flyingPlayerEntity.frequentflyer$allowFlight(level);
+
+            } else if (grantedByPlayerUUID != null) {
+                flyingPlayerEntity.frequentflyer$allowFlight(1, grantedByPlayerUUID);
+                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having it granted!, haselytra: %s, canFlyWithElytra: %s, grantedBy: %s", player.getName().getString(), hasElytra, canFlyWithElytra, grantedByPlayerUUID));
+
             } else {
-                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("disallowing flight!, haselytra: %s, allowFlight: %s, hasFlyPermission: %s", hasElytra, allowFlight, hasFlyPermission));
-                playerEntity.frequentflyer$disallowFlight();
+                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("disallowing flight for %s!", player.getName().getString()));
+                flyingPlayerEntity.frequentflyer$disallowFlight();
             }
+
         }
-    }
 
-    private static boolean hasAnyLuckPermsFlyPermission(ServerPlayerEntity player) {
-
-        LuckPerms luckPerms = getLuckPerms();
-
-        if (luckPerms != null) {
-            User luckpermsuser = luckPerms.getUserManager().getUser(player.getUuid());
-
-            if (luckpermsuser == null)
-                return false;
-
-            FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, luckpermsuser.getUsername() + " has permissions: " + luckpermsuser.getCachedData().getPermissionData().getPermissionMap());
-
-            CachedPermissionData permissionData = luckpermsuser.getCachedData()
-                    .getPermissionData();
-
-            return permissionData.checkPermission(SELF_FLY_PERMISSION).asBoolean();
-        }
-        return false;
     }
 
     private static LuckPerms getLuckPerms() {

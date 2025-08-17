@@ -12,6 +12,7 @@ import net.minecraft.storage.NbtReadView;
 import net.minecraft.storage.NbtWriteView;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
+import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
@@ -31,19 +33,33 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
     //todo: check if fuji truly gives everything that essentialcommands gives
 
-    //todo: fix fall damage if you are not flying and not creative
-    // actually use isFFenabled() now, just set the value instead of callling the functions, and call allow/dissallow every tick which check the value
+    //todo: fix fall damage if you are not flying and not creative ? has it always been like this?
 
     //todo: enforce required advancement?
 
+    //todo: enable fly command by config
+
     @Unique
     private int tickCounter = 0;
+
+    @Unique
+    private int level = 1;
 
     @Unique
     public boolean isFfFlightEnabled = false;
 
     @Unique
     public UUID grantedByPlayerUUID = null;
+
+    @Override
+    public int frequentflyer$getLevel() {
+        return level;
+    }
+
+    @Override
+    public void frequentflyer$setLevel(int setLevel) {
+        level = setLevel;
+    }
 
     @Override
     public boolean frequentflyer$isFfFlightEnabled() {
@@ -81,6 +97,18 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
         if (tickCounter % 20 == 0) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             EventHandler.evaluateTickAllowFlight(player);
+            UUID grantedByUUID = frequentflyer$getGrantedByPlayerUUID();
+            if (player.getGameMode() == GameMode.SURVIVAL) {
+                if (frequentflyer$isFfFlightEnabled()) {
+                    if (grantedByUUID != null) {
+                        frequentflyer$allowFlight(level, grantedByUUID);
+                    } else {
+                        frequentflyer$allowFlight(level);
+                    }
+                } else {
+                    frequentflyer$disallowFlight();
+                }
+            }
             tickCounter = 0;
         }
         tickCounter++;
@@ -138,6 +166,13 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
             isFfFlightEnabled = nbtReadView.getBoolean("frequentFlyerFlightEnabled", false);
             String grantedByString = nbtReadView.getString("frequentFlyerGrantedBy", null);
             grantedByPlayerUUID = (grantedByString != null && !grantedByString.isEmpty()) ? UUID.fromString(grantedByString) : null;
+        }
+    }
+
+    @Inject(method = "changeGameMode", at = @At("RETURN"))
+    private void onChangeGameMode( GameMode gameMode, CallbackInfoReturnable<Boolean> info ){
+        if (gameMode != GameMode.SURVIVAL) {
+            frequentflyer$allowFlight(1);
         }
     }
 

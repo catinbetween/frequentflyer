@@ -49,16 +49,25 @@ public class EventHandler {
             }
 
             if (hasElytra && canFlyWithElytra) {
+                flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
+                flyingPlayerEntity.frequentflyer$setLevel(level);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having elytra!, haselytra: %s, canFlyWithElytra: %s", player.getName().getString(), true, canFlyWithElytra));
-                flyingPlayerEntity.frequentflyer$allowFlight(level);
+                //TODO: replace
+                //flyingPlayerEntity.frequentflyer$allowFlight(level);
 
             } else if (grantedByPlayerUUID != null) {
-                flyingPlayerEntity.frequentflyer$allowFlight(1, grantedByPlayerUUID);
+                flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
+                flyingPlayerEntity.frequentflyer$setLevel(level);
+                //TODO: replace
+                //flyingPlayerEntity.frequentflyer$allowFlight(1, grantedByPlayerUUID);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having it granted!, haselytra: %s, canFlyWithElytra: %s, grantedBy: %s", player.getName().getString(), hasElytra, canFlyWithElytra, grantedByPlayerUUID));
 
             } else {
+                flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(false);
+                //todo: replace
+                flyingPlayerEntity.frequentflyer$setLevel(level);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("disallowing flight for %s!", player.getName().getString()));
-                flyingPlayerEntity.frequentflyer$disallowFlight();
+                //flyingPlayerEntity.frequentflyer$disallowFlight();
             }
 
         }

@@ -11,6 +11,7 @@ public interface FlyingPlayerEntity {
 
     boolean isFfFlightEnabled = false;
     UUID grantedByPlayerUUID = null;
+    int level = 1;
 
     boolean frequentflyer$isFfFlightEnabled();
 
@@ -19,4 +20,8 @@ public interface FlyingPlayerEntity {
     UUID frequentflyer$getGrantedByPlayerUUID();
 
     void frequentflyer$setGrantedByPlayerUUID(UUID grantedByPlayerUUID);
+
+    void frequentflyer$setLevel(int level);
+
+    int frequentflyer$getLevel();
 }

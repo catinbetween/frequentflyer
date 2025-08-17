@@ -9,10 +9,6 @@ public interface FlyingPlayerEntity {
 
     void frequentflyer$disallowFlight();
 
-    boolean isFfFlightEnabled = false;
-    UUID grantedByPlayerUUID = null;
-    int level = 1;
-
     boolean frequentflyer$isFfFlightEnabled();
 
     void frequentflyer$setIsFfFlightEnabled(boolean isFfFlightEnabled);
@@ -24,4 +20,8 @@ public interface FlyingPlayerEntity {
     void frequentflyer$setLevel(int level);
 
     int frequentflyer$getLevel();
+
+    void frequentflyer$setCanFlyWithElytra(boolean boolCanFlyWithElytra);
+
+    boolean frequentflyer$getCanFlyWithElytra();
 }

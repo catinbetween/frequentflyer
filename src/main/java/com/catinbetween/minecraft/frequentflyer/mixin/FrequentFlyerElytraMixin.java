@@ -6,14 +6,24 @@ import com.catinbetween.minecraft.frequentflyer.events.EventHandler;
 import com.catinbetween.minecraft.frequentflyer.interfaces.FlyingPlayerEntity;
 import com.mojang.authlib.GameProfile;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.NbtReadView;
 import net.minecraft.storage.NbtWriteView;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,10 +36,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
+import static com.catinbetween.minecraft.frequentflyer.events.EventHandler.FREQUENTFLYER;
+
 @Mixin(ServerPlayerEntity.class)
 public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements FlyingPlayerEntity {
-
-    //todo: add durability check
 
     //todo: check if fuji truly gives everything that essentialcommands gives
 
@@ -37,8 +47,17 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
     //todo: enforce required advancement?
 
+    @Shadow
+    public abstract ServerWorld getWorld();
+
     @Unique
     private int tickCounter = 0;
+
+    @Unique
+    private int flightDamage = 0;
+
+    @Unique
+    private int flightDamageLimit = 3;
 
     @Unique
     private int level = 1;
@@ -48,6 +67,19 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
     @Unique
     public UUID grantedByPlayerUUID = null;
+
+    @Unique
+    public boolean canFlyWithElytra = false;
+
+    @Override
+    public boolean frequentflyer$getCanFlyWithElytra() {
+        return canFlyWithElytra;
+    }
+
+    @Override
+    public void frequentflyer$setCanFlyWithElytra(boolean boolCanFlyWithElytra) {
+        canFlyWithElytra = boolCanFlyWithElytra;
+    }
 
     @Override
     public int frequentflyer$getLevel() {
@@ -102,6 +134,7 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
                         frequentflyer$allowFlight(level, grantedByUUID);
                     } else {
                         frequentflyer$allowFlight(level);
+                        handleDurabilityCheck();
                     }
                 } else {
                     frequentflyer$disallowFlight();
@@ -110,6 +143,39 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
             tickCounter = 0;
         }
         tickCounter++;
+    }
+
+    private void handleDurabilityCheck() {
+        FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Handling durability check for flight.");
+
+        if (getAbilities().flying) {
+
+            ItemStack chestSlot = getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
+            if (!chestSlot.isEmpty() && chestSlot.getItem() == Items.ELYTRA ) {
+                Item elytra = getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST).getItem();
+                for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : EnchantmentHelper.getEnchantments(chestSlot).getEnchantmentEntries()) {
+                    Identifier enchant = ((RegistryEntry.Reference) entry.getKey()).registryKey().getValue();
+                    level = entry.getIntValue();
+                    if (FREQUENTFLYER.getValue().equals(enchant)) {
+                        //here comes the fun
+                        flightDamage--;
+                        FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "damage level: " + chestSlot.getDamage() + "/" + chestSlot.getMaxDamage() +  " flightdamage: " + flightDamage + "/" + flightDamageLimit);
+
+                        if (flightDamage <= 0) {
+                            if (elytra != null) {
+                                chestSlot.damage(1, this);
+                                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Elytra damaged by flight, damage level: " + chestSlot.getDamage() + "/" + chestSlot.getMaxDamage());
+
+                            }
+                            flightDamageLimit = getY() <=  255 ? 3*level : level;
+                            flightDamage = flightDamageLimit;
+                        }
+
+                    }
+                }
+                chestSlot.isDamageable();
+            }
+        }
     }
 
     @Override

@@ -21,7 +21,7 @@ import net.minecraft.world.GameMode;
 import java.util.UUID;
 
 public class EventHandler {
-    private static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of("catinbetween", "frequent_flyer"));
+    public static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of("catinbetween", "frequent_flyer"));
 
     private static final String SELF_FLY_PERMISSION = "frequentFlyer.ability.fly.self";
     private static final String OTHERS_FLY_PERMISSION = "frequentFlyer.ability.fly.others";
@@ -37,6 +37,7 @@ public class EventHandler {
             ItemStack chestStack = player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
             boolean hasElytra = chestStack.getItem() == Items.ELYTRA;
             boolean canFlyWithElytra = false;
+            flyingPlayerEntity.frequentflyer$setCanFlyWithElytra(false);
             int level = 1;
 
             if (hasElytra) {
@@ -44,13 +45,18 @@ public class EventHandler {
                     Identifier enchant = ((RegistryEntry.Reference) entry.getKey()).registryKey().getValue();
                     level = entry.getIntValue();
                     if (FREQUENTFLYER.getValue().equals(enchant)) {
-                        canFlyWithElytra = true;
+                        if (chestStack.getDamage() <= chestStack.getMaxDamage() - 32) {
+                            canFlyWithElytra = true;
+                        } else {
+                            FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("Elytra is too damaged for flight: %s/%s", chestStack.getDamage(), chestStack.getMaxDamage()));
+                        }
                         break;
                     }
                 }
             }
 
             if (hasElytra && canFlyWithElytra) {
+                flyingPlayerEntity.frequentflyer$setCanFlyWithElytra(true);
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
                 flyingPlayerEntity.frequentflyer$setLevel(level);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having elytra!, haselytra: %s, canFlyWithElytra: %s", player.getName().getString(), true, canFlyWithElytra));

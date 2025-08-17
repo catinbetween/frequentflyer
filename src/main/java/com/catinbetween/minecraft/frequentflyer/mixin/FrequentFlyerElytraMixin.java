@@ -31,7 +31,9 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
     // is it then necessary to check for permissions at all?
     // configurable?
 
-    //todo: alloo required advancement?
+    //todo: make flight speed configurable
+
+    //todo: allow required advancement?
     private static final float DEFAULT_FLY_SPEED = 0.05F;
 
     private int tickCounter = 0;

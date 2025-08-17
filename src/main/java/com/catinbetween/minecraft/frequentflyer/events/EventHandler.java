@@ -44,12 +44,12 @@ public class EventHandler {
             }
 
            FlyingPlayerEntity playerEntity = (FlyingPlayerEntity)player;
-           boolean hasFlyPermission = hasLpEssentialCommandsFlyPermission(player);
+           //boolean hasFlyPermission = hasLpEssentialCommandsFlyPermission(player);
            if (hasElytra && allowFlight || hasLpEssentialCommandsFlyPermission(player)) {
-               log.info( "allowing flight!, haselytra: {}, allowFlight: {}, hasFlyPermission: {}", hasElytra, allowFlight, hasFlyPermission );
+               //log.info( "allowing flight!, haselytra: {}, allowFlight: {}, hasFlyPermission: {}", hasElytra, allowFlight, hasFlyPermission );
                playerEntity.allowFlight( level );
            } else {
-               log.info( "disallowing flight , haselytra: {}, allowFlight: {}, hasFlyPermission: {}", hasElytra, allowFlight, hasFlyPermission );
+               //log.info( "disallowing flight , haselytra: {}, allowFlight: {}, hasFlyPermission: {}", hasElytra, allowFlight, hasFlyPermission );
                playerEntity.disallowFlight( );
            }
        }

@@ -37,8 +37,6 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
     //todo: enforce required advancement?
 
-    //todo: enable fly command by config
-
     @Unique
     private int tickCounter = 0;
 

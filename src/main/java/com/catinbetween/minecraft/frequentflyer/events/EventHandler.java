@@ -25,6 +25,8 @@ public class EventHandler {
 
     private static final String SELF_FLY_PERMISSION = "frequentFlyer.ability.fly.self";
     private static final String OTHERS_FLY_PERMISSION = "frequentFlyer.ability.fly.others";
+    private static final String MAIN_COMMAND_PERMISSION = "frequentFlyer.command.main";
+    private static final String SILLY_COMMAND_PERMISSION = "frequentFlyer.command.silly";
 
 
     public static void evaluateTickAllowFlight(ServerPlayerEntity player) {
@@ -52,22 +54,16 @@ public class EventHandler {
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
                 flyingPlayerEntity.frequentflyer$setLevel(level);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having elytra!, haselytra: %s, canFlyWithElytra: %s", player.getName().getString(), true, canFlyWithElytra));
-                //TODO: replace
-                //flyingPlayerEntity.frequentflyer$allowFlight(level);
 
             } else if (grantedByPlayerUUID != null) {
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
                 flyingPlayerEntity.frequentflyer$setLevel(level);
-                //TODO: replace
-                //flyingPlayerEntity.frequentflyer$allowFlight(1, grantedByPlayerUUID);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having it granted!, haselytra: %s, canFlyWithElytra: %s, grantedBy: %s", player.getName().getString(), hasElytra, canFlyWithElytra, grantedByPlayerUUID));
 
             } else {
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(false);
-                //todo: replace
                 flyingPlayerEntity.frequentflyer$setLevel(level);
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("disallowing flight for %s!", player.getName().getString()));
-                //flyingPlayerEntity.frequentflyer$disallowFlight();
             }
 
         }
@@ -92,6 +88,32 @@ public class EventHandler {
         if (luckpermsuser == null)
             return false;
         return luckpermsuser.getCachedData().getPermissionData().checkPermission(player.getUuid().equals(target.getUuid()) ? SELF_FLY_PERMISSION : OTHERS_FLY_PERMISSION).asBoolean();
+
+    }
+
+    public static boolean hasMainCommandPermission(ServerPlayerEntity player) {
+        LuckPerms luckPerms = getLuckPerms();
+        if (luckPerms == null) {
+            return false;
+        }
+
+        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUuid());
+        if (luckpermsuser == null)
+            return false;
+        return luckpermsuser.getCachedData().getPermissionData().checkPermission( MAIN_COMMAND_PERMISSION).asBoolean();
+
+    }
+
+    public static boolean hasSillyCommandPermission(ServerPlayerEntity player) {
+        LuckPerms luckPerms = getLuckPerms();
+        if (luckPerms == null) {
+            return false;
+        }
+
+        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUuid());
+        if (luckpermsuser == null)
+            return false;
+        return luckpermsuser.getCachedData().getPermissionData().checkPermission( SILLY_COMMAND_PERMISSION).asBoolean();
 
     }
 

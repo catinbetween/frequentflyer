@@ -34,19 +34,24 @@ public class FrequentFlyer implements ModInitializer {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("frequent_flyer")
-                    .then(literal("reload").executes(FrequentFlyerConfig::commandReload)).requires(source -> source.hasPermissionLevel(4))
-                    .then(literal("meow").executes(FrequentFlyerConfig::meow)).requires(source -> source.hasPermissionLevel(0))
+                    .then(literal("meow").executes(FrequentFlyerConfig::meow)).requires(source -> EventHandler.hasSillyCommandPermission(source.getPlayer()))
+                    .then(literal("reload").executes(FrequentFlyerConfig::commandReload)).requires(source -> EventHandler.hasMainCommandPermission(source.getPlayer()))
                     .then(literal("debug").then(argument("value", StringArgumentType.greedyString())
-                            .executes(FrequentFlyerConfig::commandDebug))).requires(source -> source.hasPermissionLevel(4))
+                            .executes(FrequentFlyerConfig::commandDebug))).requires(source -> EventHandler.hasMainCommandPermission(source.getPlayer()))
             );
-            dispatcher.register(literal("fly")
-                    .requires(source -> EventHandler.hasFlyCommandPermission(source.getPlayer(), source.getPlayer()))
-                    .then(argument("flight_enabled", BoolArgumentType.bool())
-                            .executes(new FlyCommand()))
-                    .then(argument("flight_enabled", BoolArgumentType.bool())
-                            .then(CommandUtil.targetPlayerArgument()
-                                    .executes(new FlyCommand())))
-            );
+            FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Main command registered.");
+
+            if (FrequentFlyerConfig.INSTANCE.enableFlyCommand) {
+                dispatcher.register(literal("fly")
+                        .requires(source -> EventHandler.hasFlyCommandPermission(source.getPlayer(), source.getPlayer()))
+                        .then(argument("flight_enabled", BoolArgumentType.bool())
+                                .executes(new FlyCommand()))
+                        .then(argument("flight_enabled", BoolArgumentType.bool())
+                                .then(CommandUtil.targetPlayerArgument()
+                                        .executes(new FlyCommand())))
+                );
+                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Fly command registered.");
+            }
         });
     }
 

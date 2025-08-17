@@ -8,6 +8,9 @@ import com.catinbetween.minecraft.frequentflyer.FrequentFlyer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import org.apache.logging.log4j.Level;
 import net.minecraft.util.Identifier;
 
@@ -23,6 +26,7 @@ public class FrequentFlyerConfig {
     public String[] advancementsRequired = new String[]{"minecraft:end/elytra"};
     public transient Identifier[] advancements;
     public int slowFallingTime = 10;
+    public float defaultFlySpeed = 0.016F;
     public String logLevel = "INFO";
     public transient Level log;
 
@@ -66,5 +70,30 @@ public class FrequentFlyerConfig {
             advancements[i] = Identifier.of(advancementsRequired[i]);
         }
         log = Level.getLevel(logLevel);
+    }
+
+    public static int meow(CommandContext<ServerCommandSource> context) {
+        context.getSource().sendFeedback(() -> Text.literal("meow"), false);
+        return 1;
+    }
+
+    public static int commandReload(CommandContext<ServerCommandSource> context) {
+
+        context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Reloading config..."), false);
+        FrequentFlyer.log(Level.INFO, "Reloading config...");
+        loadConfig();
+        context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Config reloaded."), false);
+        FrequentFlyer.log(Level.INFO, "Config reloaded.");
+        return 1;
+    }
+
+    public static int commandDebug(CommandContext<ServerCommandSource> context) {
+        String value = context.getArgument("value", String.class);
+        FrequentFlyerConfig.INSTANCE.logLevel = value;
+        FrequentFlyerConfig.INSTANCE.log = Level.getLevel(FrequentFlyerConfig.INSTANCE.logLevel);
+
+        context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Log level set to " + value), false);
+        FrequentFlyer.log(Level.INFO, "Log level set to " + value);
+        return 1;
     }
 }

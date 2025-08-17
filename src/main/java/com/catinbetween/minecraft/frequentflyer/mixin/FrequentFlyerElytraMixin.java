@@ -23,18 +23,30 @@ import net.minecraft.world.World;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements FlyingPlayerEntity {
-    private static final Logger log = LoggerFactory.getLogger( FrequentFlyerElytraMixin.class );
 
     //todo: add durability check
 
-    //todo: fly command completely disabled, check if fuji truly gives everything that essentialcommands gives
-    // is it then necessary to check for permissions at all?
-    // configurable?
+    //todo: check if fuji truly gives everything that essentialcommands gives
+    /*todo: implement own fly Command, with making oneself fly and others
+        - write custom nbt tag to player for toggling flight and check for that before calculating all the rest at every tick
+            - default: false for all players (like when it's not written, then write false)
+        - tick check process:
+            - if fly nbt attribute not there -> write it to false and go to false branch
+            - check for nbt attribute
+                - if true => then check for self fly command permission
+                    - if true, skip elytra and enchantment checks
+                    - if it's false, then check for elytra and enchantment checks
+                - if false => do nothing, just return
+        - fly command:
+            - check if there is permission for the target
+                -if true:
+                    - check nbt toggle attribute for target;  if not there, write it to false
+                    - if true, then toggle fly nbt attribute for target , set allowfly to true, set fly speed
+                    - if false, then  toogle fly attribute for target, set allowfly to false, flying to false with falling effect
+                -if false: do nothing, just return
+    */
 
-    //todo: make flight speed configurable
-
-    //todo: allow required advancement?
-    private static final float DEFAULT_FLY_SPEED = 0.05F;
+    //todo: enforce required advancement?
 
     private int tickCounter = 0;
 
@@ -64,7 +76,7 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
     @Override
     public void allowFlight(int level) {
         getAbilities().allowFlying = true;
-        getAbilities().setFlySpeed( level * DEFAULT_FLY_SPEED );
+        getAbilities().setFlySpeed( level * FrequentFlyerConfig.INSTANCE.defaultFlySpeed );
         sendAbilitiesUpdate();
     }
 

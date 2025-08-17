@@ -1,8 +1,8 @@
 package com.catinbetween.minecraft.frequentflyer.events;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.spongepowered.asm.mixin.Unique;
+import com.catinbetween.minecraft.frequentflyer.FrequentFlyer;
+import com.catinbetween.minecraft.frequentflyer.config.FrequentFlyerConfig;
+import net.luckperms.api.cacheddata.CachedPermissionData;
 
 import com.catinbetween.minecraft.frequentflyer.interfaces.FlyingPlayerEntity;
 
@@ -23,7 +23,6 @@ import net.minecraft.world.GameMode;
 
 public class EventHandler {
     private static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of( RegistryKeys.ENCHANTMENT, Identifier.of( "catinbetween", "frequent_flyer") );
-    private static final Logger log = LoggerFactory.getLogger( EventHandler.class );
 
     public static void evaluateAllowFlight(ServerPlayerEntity player) {
         ItemStack chestStack = player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
@@ -44,20 +43,27 @@ public class EventHandler {
             }
 
            FlyingPlayerEntity playerEntity = (FlyingPlayerEntity)player;
-           //boolean hasFlyPermission = hasLpEssentialCommandsFlyPermission(player);
-           if (hasElytra && allowFlight || hasLpEssentialCommandsFlyPermission(player)) {
-               //log.info( "allowing flight!, haselytra: {}, allowFlight: {}, hasFlyPermission: {}", hasElytra, allowFlight, hasFlyPermission );
+           boolean hasFlyPermission = hasAnyLuckPermsFlyPermission(player);
+           if (hasElytra && allowFlight || hasFlyPermission) {
+               FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight!, haselytra: %s, allowFlight: %s, hasFlyPermission: %s", hasElytra, allowFlight, hasFlyPermission));
                playerEntity.allowFlight( level );
            } else {
-               //log.info( "disallowing flight , haselytra: {}, allowFlight: {}, hasFlyPermission: {}", hasElytra, allowFlight, hasFlyPermission );
+               FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("disallowing flight!, haselytra: %s, allowFlight: %s, hasFlyPermission: %s", hasElytra, allowFlight, hasFlyPermission));
                playerEntity.disallowFlight( );
            }
        }
     }
 
-    private static boolean hasLpEssentialCommandsFlyPermission(ServerPlayerEntity player) {
+    private static boolean hasAnyLuckPermsFlyPermission(ServerPlayerEntity player) {
 
-        LuckPerms luckPerms = LuckPermsProvider.get();
+        LuckPerms luckPerms;
+
+        try {
+            luckPerms = LuckPermsProvider.get();
+
+        } catch (NoClassDefFoundError e) {
+            luckPerms = null;
+        }
 
         if (luckPerms != null) {
             User luckpermsuser = luckPerms.getUserManager().getUser( player.getUuid() );
@@ -65,12 +71,16 @@ public class EventHandler {
             if( luckpermsuser == null )
                 return false;
 
-            log.info( luckpermsuser.getUsername(), " has permissions: " + luckpermsuser.getCachedData().getPermissionData().getPermissionMap() );
+            FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log,luckpermsuser.getUsername() + " has permissions: " + luckpermsuser.getCachedData().getPermissionData().getPermissionMap());
 
-            return luckpermsuser.getCachedData()
-                    .getPermissionData()
-                    .checkPermission( "essentialcommands.fly.self" )
-                    .asBoolean();
+            CachedPermissionData permissionData = luckpermsuser.getCachedData()
+                    .getPermissionData();
+
+            boolean hasFrequentFlyerFlyCommandPerm = permissionData.checkPermission( "frequentFlyer.command.fly" ).asBoolean();
+            boolean hasEssentialCommands = permissionData.checkPermission( "essentialcommands.fly.self" ).asBoolean();
+            boolean hasFujiFly = permissionData.checkPermission( "fuji.fly" ).asBoolean();
+
+            return hasEssentialCommands || hasFujiFly || hasFrequentFlyerFlyCommandPerm;
         }
         return false;
     }

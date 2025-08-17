@@ -23,7 +23,7 @@ public class FrequentFlyerConfig {
     public transient Identifier[] advancements;
     public boolean enableFlyCommand = false;
     public int slowFallingTime = 10;
-    public float defaultFlySpeed = 0.016F;
+    public float defaultFlySpeed = 0.05F;
     public String logLevel = "INFO";
     public transient Level log;
 

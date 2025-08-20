@@ -45,8 +45,6 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
     //todo: fix fall damage if you are not flying and not creative ? has it always been like this?
 
-    //todo: enforce required advancement?
-
     @Shadow
     public abstract ServerWorld getWorld();
 
@@ -191,9 +189,15 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
             FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "UUID: " + grandtedByPlayer);
         }
         getAbilities().allowFlying = true;
-        getAbilities().setFlySpeed(level * FrequentFlyerConfig.INSTANCE.defaultFlySpeed);
+        getAbilities().setFlySpeed(calculateFlySpeed(level));
         sendAbilitiesUpdate();
 
+    }
+
+    @Unique
+    private float calculateFlySpeed(int level) {
+        FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Calculated fly speed: " + (FrequentFlyerConfig.INSTANCE.defaultFlySpeed + level * FrequentFlyerConfig.INSTANCE.flySpeedStep));
+        return FrequentFlyerConfig.INSTANCE.defaultFlySpeed  + level * FrequentFlyerConfig.INSTANCE.flySpeedStep;
     }
 
 

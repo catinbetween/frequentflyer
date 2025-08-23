@@ -6,9 +6,11 @@ import com.catinbetween.minecraft.frequentflyer.command.FlyCommand;
 import com.catinbetween.minecraft.frequentflyer.config.FrequentFlyerConfig;
 
 import com.catinbetween.minecraft.frequentflyer.events.EventHandler;
+import com.catinbetween.minecraft.frequentflyer.interfaces.FlyingPlayerEntity;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +53,13 @@ public class FrequentFlyer implements ModInitializer {
                                         .executes(new FlyCommand())))
                 );
                 FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Fly command registered.");
+            }
+        });
+        ServerPlayConnectionEvents.JOIN.register((player, world, hand) -> {
+            FlyingPlayerEntity flyingPlayerEntity = (FlyingPlayerEntity) player.getPlayer();
+            if (flyingPlayerEntity.frequentflyer$isFfFlightEnabled()) {
+                player.getPlayer().getAbilities().allowFlying = true;
+                player.getPlayer().getAbilities().flying = true;
             }
         });
     }

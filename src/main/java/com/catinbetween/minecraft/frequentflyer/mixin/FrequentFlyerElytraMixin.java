@@ -41,8 +41,6 @@ import static com.catinbetween.minecraft.frequentflyer.events.EventHandler.FREQU
 @Mixin(ServerPlayerEntity.class)
 public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements FlyingPlayerEntity {
 
-    //todo: check if fuji truly gives everything that essentialcommands gives
-
     //todo: fix fall damage if you are not flying and not creative ? has it always been like this?
 
     @Shadow

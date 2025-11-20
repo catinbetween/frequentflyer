@@ -24,7 +24,7 @@ public class FrequentFlyer implements ModInitializer {
 
     public static final String MOD_ID = "frequentflyer";
     public static final String MOD_NAME = "FrequentFlyer";
-    public static final String MOD_VER = "1.0.0";
+    public static final String MOD_VER = "2.0.0";
 
     public static final Logger LOGGER = LogManager.getLogger();
 

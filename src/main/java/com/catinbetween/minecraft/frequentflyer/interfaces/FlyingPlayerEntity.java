@@ -19,6 +19,14 @@ public interface FlyingPlayerEntity {
 
     void frequentflyer$setLevel(int level);
 
+    boolean frequentflyer$isDiscoverable();
+
+    boolean frequentflyer$isTradeable();
+
+    boolean frequentflyer$canApplyAtEnchantingTable();
+
+    boolean frequentflyer$isAllowedOnBooks();
+
     int frequentflyer$getLevel();
 
     void frequentflyer$setCanFlyWithElytra(boolean boolCanFlyWithElytra);

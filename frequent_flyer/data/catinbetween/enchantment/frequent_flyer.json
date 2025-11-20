@@ -18,6 +18,15 @@
   "slots": [
     "chest"
   ],
-  "supported_items": "minecraft:elytra",
-  "weight": 100
+  "supported_items": [
+    "minecraft:elytra",
+    "minecraft:book"
+  ],
+  "exclusive_set": [],
+  "treasure": false,
+  "curse": false,
+
+  "available_for_random_selection": true,
+  "available_for_enchanted_book_offer": true,
+  "weight": 10
 }

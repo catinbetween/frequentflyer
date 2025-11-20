@@ -17,6 +17,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
+import org.apache.logging.log4j.Level;
 
 import java.util.UUID;
 
@@ -59,17 +60,17 @@ public class EventHandler {
                 flyingPlayerEntity.frequentflyer$setCanFlyWithElytra(true);
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
                 flyingPlayerEntity.frequentflyer$setLevel(level);
-                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having elytra!, haselytra: %s, canFlyWithElytra: %s", player.getName().getString(), true, canFlyWithElytra));
+                FrequentFlyer.log(Level.DEBUG, String.format("allowing flight for %s by having elytra!, haselytra: %s, canFlyWithElytra: %s", player.getName().getString(), true, canFlyWithElytra));
 
             } else if (grantedByPlayerUUID != null) {
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(true);
                 flyingPlayerEntity.frequentflyer$setLevel(level);
-                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("allowing flight for %s by having it granted!, haselytra: %s, canFlyWithElytra: %s, grantedBy: %s", player.getName().getString(), hasElytra, canFlyWithElytra, grantedByPlayerUUID));
+                FrequentFlyer.log(Level.DEBUG, String.format("allowing flight for %s by having it granted!, haselytra: %s, canFlyWithElytra: %s, grantedBy: %s", player.getName().getString(), hasElytra, canFlyWithElytra, grantedByPlayerUUID));
 
             } else {
                 flyingPlayerEntity.frequentflyer$setIsFfFlightEnabled(false);
                 flyingPlayerEntity.frequentflyer$setLevel(level);
-                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("disallowing flight for %s!", player.getName().getString()));
+                FrequentFlyer.log(Level.DEBUG, String.format("disallowing flight for %s!", player.getName().getString()));
             }
 
         }

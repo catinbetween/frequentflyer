@@ -23,7 +23,6 @@ import net.minecraft.storage.WriteView;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -43,7 +42,7 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
     //todo: fix fall damage if you are not flying and not creative ? has it always been like this?
 
-    @Shadow
+    @Unique
     public abstract ServerWorld getWorld();
 
     @Unique
@@ -75,6 +74,26 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
     @Override
     public void frequentflyer$setCanFlyWithElytra(boolean boolCanFlyWithElytra) {
         canFlyWithElytra = boolCanFlyWithElytra;
+    }
+
+    @Override
+    public boolean frequentflyer$isDiscoverable() {
+        return true;
+    }
+
+    @Override
+    public boolean frequentflyer$isTradeable() {
+        return true;
+    }
+
+    @Override
+    public boolean frequentflyer$canApplyAtEnchantingTable() {
+        return true;
+    }
+
+    @Override
+    public boolean frequentflyer$isAllowedOnBooks() {
+        return true;
     }
 
     @Override
@@ -141,6 +160,7 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
         tickCounter++;
     }
 
+    @Unique
     private void handleDurabilityCheck() {
         FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Handling durability check for flight.");
 

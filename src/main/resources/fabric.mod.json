@@ -5,7 +5,8 @@
 	"name": "FrequentFlyer",
 	"description": "This mod allows flying when equipping an elytra with the enchantment frequent_flyer.",
 	"authors": [
-		"Catinbetween"
+		"Catinbetween",
+        "FinleyOfTheWoods"
 	],
 	"contact": {
 		 "sources": "https://github.com/catinbetween/FrequentFlyer"

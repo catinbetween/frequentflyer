@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Level;
 import java.util.UUID;
 
 public class EventHandler {
-    public static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of("catinbetween", "frequent_flyer"));
+    public static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of("frequentflyer", "frequent_flyer"));
 
     private static final String SELF_FLY_PERMISSION = "frequentFlyer.ability.fly.self";
     private static final String OTHERS_FLY_PERMISSION = "frequentFlyer.ability.fly.others";

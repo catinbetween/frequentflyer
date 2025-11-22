@@ -1,6 +1,8 @@
 {
   "description": {
-    "translate": "enchantment.frequentflyer.frequent_flyer"
+    "text": "Frequent Flyer",
+    "color": "#a29616",
+    "shadow_color": 0
   },
   "supported_items": [
     "minecraft:elytra",

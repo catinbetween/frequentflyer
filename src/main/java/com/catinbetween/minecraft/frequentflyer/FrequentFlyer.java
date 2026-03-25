@@ -17,8 +17,8 @@ import org.apache.logging.log4j.Logger;
 
 import net.fabricmc.api.ModInitializer;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public class FrequentFlyer implements ModInitializer {
 
@@ -58,7 +58,7 @@ public class FrequentFlyer implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((player, world, hand) -> {
             FlyingPlayerEntity flyingPlayerEntity = (FlyingPlayerEntity) player.getPlayer();
             if (flyingPlayerEntity.frequentflyer$isFfFlightEnabled()) {
-                player.getPlayer().getAbilities().allowFlying = true;
+                player.getPlayer().getAbilities().mayfly = true;
                 player.getPlayer().getAbilities().flying = true;
             }
         });

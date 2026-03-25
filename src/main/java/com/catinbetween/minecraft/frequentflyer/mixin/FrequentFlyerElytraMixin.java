@@ -7,43 +7,43 @@ import com.catinbetween.minecraft.frequentflyer.interfaces.FlyingPlayerEntity;
 import com.mojang.authlib.GameProfile;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.GameMode;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
 import static com.catinbetween.minecraft.frequentflyer.events.EventHandler.FREQUENTFLYER;
 
-@Mixin(ServerPlayerEntity.class)
-public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements FlyingPlayerEntity {
+@Mixin( ServerPlayer.class)
+public abstract class FrequentFlyerElytraMixin extends Player implements FlyingPlayerEntity {
 
     //todo: fix fall damage if you are not flying and not creative ? has it always been like this?
 
     @Unique
-    public abstract ServerWorld getWorld();
+    public abstract ServerLevel getWorld();
 
     @Unique
     private int tickCounter = 0;
@@ -126,24 +126,24 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
         grantedByPlayerUUID = setGrantedByPlayerUUID;
     }
 
-    public FrequentFlyerElytraMixin(World world, GameProfile profile) {
+    public FrequentFlyerElytraMixin( Level world, GameProfile profile) {
         super(world, profile);
     }
 
 
-    @Inject(method = "jump", at = @At("HEAD"))
+    @Inject(method = "jumpFromGround", at = @At("HEAD"))
     private void onJump(CallbackInfo ci) {
-        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+        ServerPlayer player = (ServerPlayer) (Object) this;
         EventHandler.evaluateTickAllowFlight(player);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTickMovement(CallbackInfo ci) {
         if (tickCounter % 20 == 0) {
-            ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+            ServerPlayer player = (ServerPlayer) (Object) this;
             EventHandler.evaluateTickAllowFlight(player);
             UUID grantedByUUID = frequentflyer$getGrantedByPlayerUUID();
-            if (player.getGameMode() == GameMode.SURVIVAL) {
+            if (player.gameMode() == GameType.SURVIVAL) {
                 if (frequentflyer$isFfFlightEnabled()) {
                     if (grantedByUUID != null) {
                         frequentflyer$allowFlight(level, grantedByUUID);
@@ -166,21 +166,21 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
         if (getAbilities().flying) {
 
-            ItemStack chestSlot = getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
+            ItemStack chestSlot = getItemBySlot( net.minecraft.world.entity.EquipmentSlot.CHEST);
             if (!chestSlot.isEmpty() && chestSlot.getItem() == Items.ELYTRA ) {
-                Item elytra = getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST).getItem();
-                for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : EnchantmentHelper.getEnchantments(chestSlot).getEnchantmentEntries()) {
-                    Identifier enchant = ((RegistryEntry.Reference) entry.getKey()).registryKey().getValue();
+                Item elytra = getItemBySlot( net.minecraft.world.entity.EquipmentSlot.CHEST).getItem();
+                for (Object2IntMap.Entry<Holder<Enchantment>> entry : EnchantmentHelper.getEnchantmentsForCrafting(chestSlot).entrySet()) {
+                    Identifier enchant = ((Holder.Reference) entry.getKey()).key().identifier();
                     level = entry.getIntValue();
-                    if (FREQUENTFLYER.getValue().equals(enchant)) {
+                    if (FREQUENTFLYER.identifier().equals(enchant)) {
                         //here comes the fun
                         flightDamage--;
-                        FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "damage level: " + chestSlot.getDamage() + "/" + chestSlot.getMaxDamage() +  " flightdamage: " + flightDamage + "/" + flightDamageLimit);
+                        FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "damage level: " + chestSlot.getDamageValue() + "/" + chestSlot.getMaxDamage() +  " flightdamage: " + flightDamage + "/" + flightDamageLimit);
 
                         if (flightDamage <= 0) {
                             if (elytra != null) {
-                                chestSlot.damage(1, this);
-                                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Elytra damaged by flight, damage level: " + chestSlot.getDamage() + "/" + chestSlot.getMaxDamage());
+                                chestSlot.hurtWithoutBreaking(1, this);
+                                FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "Elytra damaged by flight, damage level: " + chestSlot.getDamageValue() + "/" + chestSlot.getMaxDamage());
 
                             }
                             flightDamageLimit = getY() <=  255 ? 3*level : level;
@@ -189,7 +189,7 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
 
                     }
                 }
-                chestSlot.isDamageable();
+                chestSlot.isDamageableItem();
             }
         }
     }
@@ -206,9 +206,9 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
             frequentflyer$setGrantedByPlayerUUID(grandtedByPlayer);
             FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, "UUID: " + grandtedByPlayer);
         }
-        getAbilities().allowFlying = true;
-        getAbilities().setFlySpeed(calculateFlySpeed(level));
-        sendAbilitiesUpdate();
+        getAbilities().mayfly = true;
+        getAbilities().setFlyingSpeed(calculateFlySpeed(level));
+        onUpdateAbilities();
 
     }
 
@@ -224,40 +224,40 @@ public abstract class FrequentFlyerElytraMixin extends PlayerEntity implements F
         frequentflyer$setIsFfFlightEnabled(false);
         frequentflyer$setGrantedByPlayerUUID(null);
 
-        getAbilities().allowFlying = false;
+        getAbilities().mayfly = false;
 
         if (getAbilities().flying) {
-            addStatusEffect(new StatusEffectInstance(StatusEffects.SLOW_FALLING, FrequentFlyerConfig.INSTANCE.slowFallingTime * 20));
+            addEffect(new MobEffectInstance( MobEffects.SLOW_FALLING, FrequentFlyerConfig.INSTANCE.slowFallingTime * 20));
             getAbilities().flying = false;
         }
-        sendAbilitiesUpdate();
+        onUpdateAbilities();
     }
 
-    @Inject(method = "writeCustomData", at = @At("RETURN"))
-    private void onWriteCustomData(WriteView view, CallbackInfo ci) {
-        if (view instanceof NbtWriteView nbtWriteView) {
+    @Inject(method = "addAdditionalSaveData", at = @At("RETURN"))
+    private void onWriteCustomData( ValueOutput view, CallbackInfo ci) {
+        if (view instanceof TagValueOutput nbtWriteView) {
             nbtWriteView.putBoolean("frequentFlyerFlightEnabled", isFfFlightEnabled);
             if (grantedByPlayerUUID != null) {
                 nbtWriteView.putString("frequentFlyerGrantedBy", grantedByPlayerUUID.toString());
             } else {
-                nbtWriteView.remove("frequentFlyerGrantedBy");
+                nbtWriteView.discard("frequentFlyerGrantedBy");
             }
         }
     }
 
 
-    @Inject(method = "readCustomData", at = @At("RETURN"))
-    private void onReadCustomDataFromTag(ReadView view, CallbackInfo ci) {
-        if (view instanceof NbtReadView nbtReadView) {
-            isFfFlightEnabled = nbtReadView.getBoolean("frequentFlyerFlightEnabled", false);
-            String grantedByString = nbtReadView.getString("frequentFlyerGrantedBy", null);
+    @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
+    private void onReadCustomDataFromTag( ValueInput view, CallbackInfo ci) {
+        if (view instanceof TagValueInput nbtReadView) {
+            isFfFlightEnabled = nbtReadView.getBooleanOr("frequentFlyerFlightEnabled", false);
+            String grantedByString = nbtReadView.getStringOr("frequentFlyerGrantedBy", null);
             grantedByPlayerUUID = (grantedByString != null && !grantedByString.isEmpty()) ? UUID.fromString(grantedByString) : null;
         }
     }
 
-    @Inject(method = "changeGameMode", at = @At("RETURN"))
-    private void onChangeGameMode( GameMode gameMode, CallbackInfoReturnable<Boolean> info ){
-        if (gameMode != GameMode.SURVIVAL) {
+    @Inject(method = "setGameMode", at = @At("RETURN"))
+    private void onChangeGameMode( GameType gameMode, CallbackInfoReturnable<Boolean> info ){
+        if (gameMode != GameType.SURVIVAL) {
             frequentflyer$allowFlight(1);
         }
     }

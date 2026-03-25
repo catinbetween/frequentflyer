@@ -1,0 +1,37 @@
+<migration>
+	<!-- Commands & Players -->
+	<entry oldName="net.minecraft.server.command.ServerCommandSource" newName="net.minecraft.commands.CommandSourceStack" type="Class" />
+	<entry oldName="net.minecraft.server.network.ServerPlayerEntity" newName="net.minecraft.server.level.ServerPlayer" type="Class" />
+
+	<entry oldName="net.minecraft.server.command.CommandManager" newName="net.minecraft.commands.Commands" type="Class" />
+	<entry oldName="net.minecraft.command.EntitySelector" newName="net.minecraft.commands.arguments.selector.EntitySelector" type="Class" />
+	<entry oldName="net.minecraft.command.argument.EntityArgumentType" newName="net.minecraft.commands.arguments.EntityArgument" type="Class" />
+
+	<!-- Registries & Utilities -->
+	<entry oldName="net.minecraft.util.Identifier" newName="net.minecraft.resources.ResourceLocation" type="Class" />
+	<entry oldName="net.minecraft.registry.RegistryKey" newName="net.minecraft.resources.ResourceKey" type="Class" />
+	<entry oldName="net.minecraft.registry.RegistryKeys" newName="net.minecraft.core.registries.Registries" type="Class" />
+	<entry oldName="net.minecraft.registry.entry.RegistryEntry" newName="net.minecraft.core.Holder" type="Class" />
+	<entry oldName="net.minecraft.util.math.BlockPos" newName="net.minecraft.core.BlockPos" type="Class" />
+	<entry oldName="net.minecraft.util.math.Direction" newName="net.minecraft.core.Direction" type="Class" />
+
+	<!-- World & Game State -->
+	<entry oldName="net.minecraft.world.World" newName="net.minecraft.world.level.Level" type="Class" />
+	<entry oldName="net.minecraft.server.world.ServerWorld" newName="net.minecraft.server.level.ServerLevel" type="Class" />
+	<entry oldName="net.minecraft.world.GameMode" newName="net.minecraft.world.level.GameType" type="Class" />
+	<entry oldName="net.minecraft.util.math.Vec3d" newName="net.minecraft.world.phys.Vec3" type="Class" />
+
+	<!-- Blocks & Items -->
+	<entry oldName="net.minecraft.block.Block" newName="net.minecraft.world.level.block.Block" type="Class" />
+	<entry oldName="net.minecraft.block.BlockState" newName="net.minecraft.world.level.block.state.BlockState" type="Class" />
+	<entry oldName="net.minecraft.item.ItemStack" newName="net.minecraft.world.item.ItemStack" type="Class" />
+	<entry oldName="net.minecraft.item.Items" newName="net.minecraft.world.item.Items" type="Class" />
+
+	<!-- Enchantments -->
+	<entry oldName="net.minecraft.enchantment.Enchantment" newName="net.minecraft.world.item.enchantment.Enchantment" type="Class" />
+	<entry oldName="net.minecraft.enchantment.EnchantmentHelper" newName="net.minecraft.world.item.enchantment.EnchantmentHelper" type="Class" />
+
+	<!-- UI & Text -->
+	<entry oldName="net.minecraft.text.Text" newName="net.minecraft.network.chat.Component" type="Class" />
+	<entry oldName="net.minecraft.client.util.math.MatrixStack" newName="com.mojang.blaze3d.vertex.PoseStack" type="Class" />
+</migration>

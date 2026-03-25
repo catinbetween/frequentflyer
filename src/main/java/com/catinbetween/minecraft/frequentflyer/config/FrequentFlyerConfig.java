@@ -4,9 +4,9 @@ import com.catinbetween.minecraft.frequentflyer.FrequentFlyer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
@@ -62,27 +62,27 @@ public class FrequentFlyerConfig {
         }
     }
 
-    public static int meow(CommandContext<ServerCommandSource> context) {
-        context.getSource().sendFeedback(() -> Text.literal("meow"), false);
+    public static int meow(CommandContext<CommandSourceStack> context) {
+        context.getSource().sendSuccess(() -> Component.literal("meow"), false);
         return 1;
     }
 
-    public static int commandReload(CommandContext<ServerCommandSource> context) {
+    public static int commandReload(CommandContext<CommandSourceStack> context) {
 
-        context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Reloading config..."), false);
+        context.getSource().sendSuccess(() -> Component.literal("FrequentFlyer: Reloading config..."), false);
         FrequentFlyer.log(Level.INFO, "Reloading config...");
         loadConfig();
-        context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Config reloaded."), false);
+        context.getSource().sendSuccess(() -> Component.literal("FrequentFlyer: Config reloaded."), false);
         FrequentFlyer.log(Level.INFO, "Config reloaded.");
         return 1;
     }
 
-    public static int commandDebug(CommandContext<ServerCommandSource> context) {
+    public static int commandDebug(CommandContext<CommandSourceStack> context) {
         String value = context.getArgument("value", String.class);
         FrequentFlyerConfig.INSTANCE.logLevel = value;
         FrequentFlyerConfig.INSTANCE.log = Level.getLevel(FrequentFlyerConfig.INSTANCE.logLevel);
 
-        context.getSource().sendFeedback(() -> Text.literal("FrequentFlyer: Log level set to " + value), false);
+        context.getSource().sendSuccess(() -> Component.literal("FrequentFlyer: Log level set to " + value), false);
         FrequentFlyer.log(Level.INFO, "Log level set to " + value);
         return 1;
     }
@@ -90,7 +90,7 @@ public class FrequentFlyerConfig {
     private void generateTransients() {
         advancements = new Identifier[advancementsRequired.length];
         for (int i = 0; i < advancements.length; i++) {
-            advancements[i] = Identifier.of(advancementsRequired[i]);
+            advancements[i] = Identifier.parse(advancementsRequired[i]);
         }
         log = Level.getLevel(logLevel);
     }

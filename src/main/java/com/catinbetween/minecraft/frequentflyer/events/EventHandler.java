@@ -7,22 +7,24 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.GameMode;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.GameType;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 public class EventHandler {
-    public static final RegistryKey<Enchantment> FREQUENTFLYER = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of("frequentflyer", "frequent_flyer"));
+    public static final ResourceKey<@NotNull Enchantment> FREQUENTFLYER = ResourceKey.create(
+            Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath("frequentflyer", "frequent_flyer"));
 
     private static final String SELF_FLY_PERMISSION = "frequentFlyer.ability.fly.self";
     private static final String OTHERS_FLY_PERMISSION = "frequentFlyer.ability.fly.others";
@@ -30,26 +32,26 @@ public class EventHandler {
     private static final String SILLY_COMMAND_PERMISSION = "frequentFlyer.command.silly";
 
 
-    public static void evaluateTickAllowFlight(ServerPlayerEntity player) {
-        if (player.getGameMode() == GameMode.SURVIVAL) {
+    public static void evaluateTickAllowFlight( ServerPlayer player) {
+        if (player.gameMode() == GameType.SURVIVAL) {
             FlyingPlayerEntity flyingPlayerEntity = (FlyingPlayerEntity) player;
             UUID grantedByPlayerUUID = flyingPlayerEntity.frequentflyer$getGrantedByPlayerUUID();
 
-            ItemStack chestStack = player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST);
+            ItemStack chestStack = player.getItemBySlot( net.minecraft.world.entity.EquipmentSlot.CHEST);
             boolean hasElytra = chestStack.getItem() == Items.ELYTRA;
             boolean canFlyWithElytra = false;
             flyingPlayerEntity.frequentflyer$setCanFlyWithElytra(false);
             int level = 1;
 
             if (hasElytra) {
-                for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : EnchantmentHelper.getEnchantments(chestStack).getEnchantmentEntries()) {
-                    Identifier enchant = ((RegistryEntry.Reference) entry.getKey()).registryKey().getValue();
+                for (Object2IntMap.Entry<Holder<@NotNull Enchantment>> entry : EnchantmentHelper.getEnchantmentsForCrafting(chestStack).entrySet()) {
+                    Identifier enchant = ((Holder.Reference) entry.getKey()).key().identifier();
                     level = entry.getIntValue();
-                    if (FREQUENTFLYER.getValue().equals(enchant)) {
-                        if (chestStack.getDamage() <= chestStack.getMaxDamage() - 32) {
+                    if (FREQUENTFLYER.identifier().equals(enchant)) {
+                        if (chestStack.getDamageValue() <= chestStack.getMaxDamage() - 32) {
                             canFlyWithElytra = true;
                         } else {
-                            FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("Elytra is too damaged for flight: %s/%s", chestStack.getDamage(), chestStack.getMaxDamage()));
+                            FrequentFlyer.log(FrequentFlyerConfig.INSTANCE.log, String.format("Elytra is too damaged for flight: %s/%s", chestStack.getDamageValue(), chestStack.getMaxDamage()));
                         }
                         break;
                     }
@@ -85,39 +87,39 @@ public class EventHandler {
         }
     }
 
-    public static boolean hasFlyCommandPermission(ServerPlayerEntity player, ServerPlayerEntity target) {
+    public static boolean hasFlyCommandPermission( ServerPlayer player, ServerPlayer target) {
         LuckPerms luckPerms = getLuckPerms();
         if (luckPerms == null) {
             return false;
         }
 
-        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUuid());
+        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUUID());
         if (luckpermsuser == null)
             return false;
-        return luckpermsuser.getCachedData().getPermissionData().checkPermission(player.getUuid().equals(target.getUuid()) ? SELF_FLY_PERMISSION : OTHERS_FLY_PERMISSION).asBoolean();
+        return luckpermsuser.getCachedData().getPermissionData().checkPermission(player.getUUID().equals(target.getUUID()) ? SELF_FLY_PERMISSION : OTHERS_FLY_PERMISSION).asBoolean();
 
     }
 
-    public static boolean hasMainCommandPermission(ServerPlayerEntity player) {
+    public static boolean hasMainCommandPermission( ServerPlayer player) {
         LuckPerms luckPerms = getLuckPerms();
         if (luckPerms == null) {
             return false;
         }
 
-        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUuid());
+        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUUID());
         if (luckpermsuser == null)
             return false;
         return luckpermsuser.getCachedData().getPermissionData().checkPermission( MAIN_COMMAND_PERMISSION).asBoolean();
 
     }
 
-    public static boolean hasSillyCommandPermission(ServerPlayerEntity player) {
+    public static boolean hasSillyCommandPermission( ServerPlayer player) {
         LuckPerms luckPerms = getLuckPerms();
         if (luckPerms == null) {
             return false;
         }
 
-        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUuid());
+        User luckpermsuser = luckPerms.getUserManager().getUser(player.getUUID());
         if (luckpermsuser == null)
             return false;
         return luckpermsuser.getCachedData().getPermissionData().checkPermission( SILLY_COMMAND_PERMISSION).asBoolean();
